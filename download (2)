@@ -1,0 +1,63 @@
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+BOT_NAME = "phoenix"
+SPIDER_MODULES = ["phoenix.spiders"]
+NEWSPIDER_MODULE = "phoenix.spiders"
+
+ROBOTSTXT_OBEY = False
+COOKIES_ENABLED = True          # the identity JWT cookie from login flows automatically
+
+USER_AGENT = (
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+    "(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+)
+
+# Phoenix is a GraphQL API — hydration is one request per PIP, so concurrency is
+# the throughput lever. From a residential IP you can raise it; back off on 429s.
+CONCURRENT_REQUESTS = int(os.getenv("PHOENIX_CONCURRENCY", "8"))
+CONCURRENT_REQUESTS_PER_DOMAIN = int(os.getenv("PHOENIX_CONCURRENCY", "8"))
+DOWNLOAD_DELAY = float(os.getenv("PHOENIX_DELAY", "0.1"))
+AUTOTHROTTLE_ENABLED = True
+AUTOTHROTTLE_START_DELAY = 0.3
+AUTOTHROTTLE_MAX_DELAY = 15.0
+AUTOTHROTTLE_TARGET_CONCURRENCY = float(os.getenv("PHOENIX_CONCURRENCY", "8"))
+
+RETRY_ENABLED = True
+RETRY_TIMES = 3
+RETRY_HTTP_CODES = [429, 500, 502, 503, 504, 522, 524, 408]
+DOWNLOAD_TIMEOUT = 45
+
+FEEDS = {
+    "output/phoenix_prices_%(time)s.jsonl": {
+        "format": "jsonlines", "encoding": "utf8", "overwrite": False, "store_empty": False,
+    },
+}
+ITEM_PIPELINES = {"phoenix.pipelines.SupabaseUpsertPipeline": 300}
+
+REQUEST_FINGERPRINTER_IMPLEMENTATION = "2.7"
+TWISTED_REACTOR = "twisted.internet.asyncioreactor.AsyncioSelectorReactor"
+LOG_LEVEL = os.getenv("PHOENIX_LOG_LEVEL", "INFO")
+
+# ── Credentials as Scrapy settings (Zyte Raw settings), env fallback ────────
+PHOENIX_USER = os.getenv("PHOENIX_USER", "")
+PHOENIX_PASS = os.getenv("PHOENIX_PASS", "")
+# Phoenix deliveryPointId = the branch's Phoenix account number, e.g. 21916.
+PHOENIX_DELIVERY_POINT_ID = os.getenv("PHOENIX_DELIVERY_POINT_ID", "")
+# App branch UUID for live_prices_cache.branch_id (recommended — the cache is
+# keyed on (pip_code, supplier_name, branch_id)).
+PHOENIX_BRANCH_ID = os.getenv("PHOENIX_BRANCH_ID", "")
+# How long a cached price is considered live (minutes).
+PHOENIX_TTL_MINUTES = int(os.getenv("PHOENIX_TTL_MINUTES", "1440"))
+
+SUPABASE_URL = os.getenv("SUPABASE_URL", "")
+SUPABASE_SERVICE_KEY = os.getenv("SUPABASE_SERVICE_KEY", "")
+
+# ── Optional: Zyte Smart Proxy (residential IPs past the datacenter block) ──
+DOWNLOADER_MIDDLEWARES = {
+    "scrapy_zyte_smartproxy.ZyteSmartProxyMiddleware": 610,
+}
+ZYTE_SMARTPROXY_ENABLED = str(os.getenv("ZYTE_SMARTPROXY_ENABLED", "false")).lower() == "true"
+ZYTE_SMARTPROXY_APIKEY = os.getenv("ZYTE_SMARTPROXY_APIKEY", "")

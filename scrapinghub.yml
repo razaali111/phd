@@ -1,0 +1,5 @@
+# Zyte deploy config. Set your project id after `shub deploy <id>` (or via the
+# Zyte GitHub-deploy connection — the id there wins).
+# project: 000000
+requirements:
+  file: requirements.txt
